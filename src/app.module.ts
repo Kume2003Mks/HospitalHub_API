@@ -35,11 +35,6 @@ import { Page } from './entities/page.entity';
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      // host: 'z239784-sq2018.ps05.zwhhosting.com',
-      // port: 3306,
-      // username: 'zsqpszw1_dev',
-      // password: 'BXu5Pyqg7O',
-      // database: 'zsqpszw1_next',
       host: 'localhost',
       port: 3306,
       username: 'root',
