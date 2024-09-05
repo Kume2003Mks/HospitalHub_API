@@ -39,7 +39,7 @@ import { Page } from './entities/page.entity';
       port: 3306,
       username: 'root',
       password: 'root',
-      database: 'api_hospital',
+      database: 'HospitalHub',
       entities: [Promotion, Contact, Department, Health, News, User, Banner, Doctor, Page],
       synchronize: true,
     }), PromotionModule, ContactModule, NewsModule, HealthModule,
