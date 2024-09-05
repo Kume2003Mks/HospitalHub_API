@@ -4,6 +4,7 @@ import { UpdateBannerDto } from './dto/update-banner.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Banner } from 'src/entities/banner.entity';
+import { Request } from 'express';
 
 @Injectable()
 export class BannerService {
@@ -14,9 +15,8 @@ export class BannerService {
   ) { }
 
   async create(createBannerDto: CreateBannerDto) {
-    const regex = /[^/]+$/;
-    const matches = createBannerDto.image.match(regex);
-    const filename = matches ? matches[0] : "";
+    const url = new URL(createBannerDto.image);
+    const filename = url.pathname;
 
     const health = this.bannerRepository.create({
       ...createBannerDto,
@@ -24,28 +24,43 @@ export class BannerService {
     });
 
     return await this.bannerRepository.save(health);
-    }
-    
-    async findAll() {
+  }
+
+  async findAll(req: Request) {
+    const baseUrl = req.protocol + '://' + req.get('host');
+
     const banner = await this.bannerRepository.find()
+    return banner.map(banner => ({
+      ...banner,
+      image: `${baseUrl}${banner.image}`,
+    }));;
+  }
+
+  async findOne(id: number, req: Request) {
+    const baseUrl = req.protocol + '://' + req.get('host');
+
+    const banner = await this.bannerRepository.findOne({
+      where: { id },
+    });
+    if (!banner) {
+      throw new NotFoundException(`banner with id ${id} not found`);
+    }
+
+    banner.image = `${baseUrl}${banner.image}`
+
     return banner;
   }
 
-  async findOne(id: number) {
-    const promotion = await this.bannerRepository.findOne({
-      where: { id },
-    });
-    if (!promotion) {
-      throw new NotFoundException(`Promotion with id ${id} not found`);
-    }
-    return promotion;
-  }
-
   async update(id: number, updateBannerDto: UpdateBannerDto) {
-    const bannerUpdate = await this.bannerRepository.findOne({ where: { id }});
+    const bannerUpdate = await this.bannerRepository.findOne({ where: { id } });
     if (!bannerUpdate) {
       throw new NotFoundException(`Promotion with id ${id} not found`);
     }
+
+    const url = new URL(updateBannerDto.image);
+    const filename = url.pathname;
+
+    updateBannerDto.image = filename;
 
     // Merge fields from update DTO into the retrieved promotion
     Object.assign(bannerUpdate, updateBannerDto);

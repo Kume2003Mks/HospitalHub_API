@@ -5,6 +5,7 @@ import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { Department } from 'src/entities/department.entity';
 import { Doctor } from 'src/entities/doctor.entity';
+import { Request } from 'express';
 
 @Injectable()
 export class DoctorService {
@@ -13,7 +14,7 @@ export class DoctorService {
     private readonly doctorRepository: Repository<Doctor>,
     @InjectRepository(Department)
     private readonly departmentRepository: Repository<Department>,
-  ) {}
+  ) { }
 
   async create(createDoctorDto: CreateDoctorDto) {
     const { name, cover, specialized, content, publish, departmentId } = createDoctorDto;
@@ -26,9 +27,12 @@ export class DoctorService {
       throw new Error('Some departments not found');
     }
 
+    const url = new URL(cover);
+    const filename = url.pathname;
+
     const doctor = this.doctorRepository.create({
       name,
-      cover,
+      cover :filename,
       specialized,
       content,
       publish,
@@ -38,12 +42,24 @@ export class DoctorService {
     return this.doctorRepository.save(doctor);
   }
 
-  findAll() {
-    return this.doctorRepository.find({ relations: ['departments'] });
+  async findAll(req: Request) {
+    const baseUrl = req.protocol + '://' + req.get('host');
+
+    const doctor = await this.doctorRepository.find({ relations: ['departments'] });
+
+    return doctor.map(doctor => ({
+      ...doctor,
+      cover: `${baseUrl}${doctor.cover}`,
+    }));;
   }
 
-  findOne(id: number) {
-    return this.doctorRepository.findOne({ where: { id }, relations: ['departments'] });
+
+  async findOne(id: number, req: Request) {
+    const baseUrl = req.protocol + '://' + req.get('host');
+
+    const doctor = await this.doctorRepository.findOne({ where: { id }, relations: ['departments'] });
+    doctor.cover = `${baseUrl}${doctor.cover}`;
+    return doctor
   }
 
   async update(id: number, updateDoctorDto: UpdateDoctorDto) {
@@ -62,8 +78,11 @@ export class DoctorService {
       throw new Error('Some departments not found');
     }
 
+    const url = new URL(cover);
+    const filename = url.pathname;
+
     doctor.name = name;
-    doctor.cover = cover;
+    doctor.cover = filename;
     doctor.specialized = specialized;
     doctor.content = content;
     doctor.publish = publish;

@@ -1,13 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { DoctorService } from './doctor.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Request } from 'express';
+
 
 @UseGuards(JwtAuthGuard)
 @Controller('admin/doctor')
 export class DoctorController {
-  constructor(private readonly doctorService: DoctorService) {}
+  constructor(private readonly doctorService: DoctorService) { }
 
   @Post()
   create(@Body() createDoctorDto: CreateDoctorDto) {
@@ -15,13 +17,13 @@ export class DoctorController {
   }
 
   @Get()
-  findAll() {
-    return this.doctorService.findAll();
+  findAll(@Req() req: Request) {
+    return this.doctorService.findAll(req);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.doctorService.findOne(+id);
+  findOne(@Param('id') id: string, @Req() req: Request) {
+    return this.doctorService.findOne(+id, req);
   }
 
   @Patch(':id')

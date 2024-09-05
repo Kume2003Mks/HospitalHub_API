@@ -33,3 +33,17 @@ npm run test:e2e
 # test coverage
 npm run test:cov
 ```
+
+## Run In Docker 
+
+```bash
+
+# create network
+docker network create NovaNet
+
+#build command
+docker build -t hospitalhub-nestjs .
+
+# run in net work
+docker run -d --network NovaNet --name nestjs-app -p 3001:3001 hospitalhub-nestjs
+```

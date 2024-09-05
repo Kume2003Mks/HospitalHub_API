@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { BannerService } from './banner.service';
 import { CreateBannerDto } from './dto/create-banner.dto';
 import { UpdateBannerDto } from './dto/update-banner.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Request } from 'express';
 
 @Controller('banner')
 export class BannerController {
@@ -15,13 +16,13 @@ export class BannerController {
   }
 
   @Get()
-  findAll() {
-    return this.bannerService.findAll();
+  findAll(@Req() req: Request) {
+    return this.bannerService.findAll(req);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.bannerService.findOne(+id);
+  findOne(@Param('id') id: string, @Req() req: Request) {
+    return this.bannerService.findOne(+id, req);
   }
 
   @UseGuards(JwtAuthGuard)
